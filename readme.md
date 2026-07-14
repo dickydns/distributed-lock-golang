@@ -92,14 +92,9 @@ result, err := lock.Execute(
     event,
     30*time.Second,
     func() (interface{}, error) {
-
-        fmt.Println("Generating Event...")
-
-        time.Sleep(3 * time.Second)
-
-        fmt.Println("Event Generated")
-
-        return "SUCCESS", nil
+        fmt.Println("Generating Event...", i)
+        time.Sleep(3* time.Second)
+        return "",nil
     },
 )
 

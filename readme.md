@@ -126,10 +126,8 @@ SETNX
 Success     Failed
  │            │
  ▼            ▼
-Execute    Return Error
- │
- ▼
-Release Lock
+Execute    Return Info
+
 ```
 
 ---
@@ -175,15 +173,6 @@ Without a TTL, a stale lock could block future requests indefinitely.
 
 ---
 
-## Related Articles
-
-- Retry Pattern
-- Circuit Breaker Pattern
-- Idempotency
-- Distributed Lock
-- Worker Pool *(Coming Soon)*
-
----
 
 ##  Support
 

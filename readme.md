@@ -124,8 +124,10 @@ Success     Failed
 Execute    Return Error
  │
  ▼
-Release Lock
+Release Lock    
 
+
+if you wanna try release lock feature, uncomment func d.redis.Delete(lockKey) in file distributed_lock.go  43-46
 ```
 
 ---

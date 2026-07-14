@@ -1,67 +1,49 @@
-# Go Idempotency Helper with Redis
+# Distributed Lock Helper in Golang using Redis
 
-A simple reusable Idempotency Helper written in Go using Redis.
+A simple implementation of **Distributed Lock** in Golang using **Redis SETNX**.
 
-This project demonstrates how to prevent duplicate requests using Redis, `SETNX`, and response caching.
+This project demonstrates how to ensure that only one process can execute a specific task at a time, preventing race conditions in distributed systems.
 
-## Features
+---
 
-- Redis Connection
-- Idempotency Key
-- Distributed Lock (SETNX)
-- Response Cache
-- TTL Support
-- Reusable Helper
-- JSON Response
-- Environment Configuration (.env)
+##  Features
+
+- Distributed Lock using Redis
+- Atomic lock acquisition with `SETNX`
+- Automatic lock expiration using TTL
+- Simple callback-based API
+- Easy to integrate into any Go project
+
+---
+
+##  Tech Stack
+
+- Golang
+- Redis
+- go-redis/v9
 
 ---
 
 ## Project Structure
 
 ```text
-go-idempotency-redis/
-│
-├── helper/
-│   ├── env.go
-│   ├── redis.go
-│   ├── response.go
-│   └── idempotency.go
+distributed-lock-golang/
 │
 ├── .env
-├── .env.example
-├── .gitignore
 ├── go.mod
 ├── go.sum
 ├── main.go
-└── README.md
+│
+└── helper/
+    ├── distributed_lock.go
+    ├── redis.go
+    ├── response.go
+    └── env.go
 ```
 
 ---
 
-## Installation
-
-Clone repository
-
-```bash
-git clone https://github.com/dickydns/distributed-lock-golang
-```
-
-Go to project
-
-```bash
-cd distributed-lock-golang
-```
-
-Install dependencies
-
-```bash
-go mod tidy
-```
-
----
-
-## Environment
+## ⚙️ Environment Variables
 
 Create a `.env` file.
 
@@ -73,156 +55,138 @@ REDIS_PASSWORD=
 
 ---
 
-## Run
+## 📥 Installation
+
+Clone the repository.
 
 ```bash
-go run main.go
+git clone https://github.com/dickydns/distributed-lock-golang
+```
+
+Go to the project.
+
+```bash
+cd distributed-lock-golang
+```
+
+Install dependencies.
+
+```bash
+go mod tidy
+```
+
+Run the application.
+
+```bash
+go run .
 ```
 
 ---
 
-## Example
+## 💻 Example
 
 ```go
-key_from_frontend := "user:register:123"
-result, err := idempotency.Execute(
-    key_from_frontend,
+lock := helper.NewDistributedLock(redis)
+event:= "create:voucer"
+result, err := lock.Execute(
+    event,
     30*time.Second,
     func() (interface{}, error) {
 
-        fmt.Println("Creating User...")
+        fmt.Println("Generating Event...")
 
-        return helper.SuccessResponse(map[string]interface{}{
-            "id":   1,
-            "name": "User 123",
-        }), nil
+        time.Sleep(3 * time.Second)
+
+        fmt.Println("Event Generated")
+
+        return "SUCCESS", nil
     },
 )
+
+if err != nil {
+    fmt.Println(err)
+    return
+}
+
+fmt.Println(result)
 ```
 
 ---
 
-## Flow
+## 🔄 How It Works
 
 ```text
-                Client
-                   │
-                   ▼
-         Check Cached Response
-                   │
-          ┌────────┴────────┐
-          │                 │
-        HIT               MISS
-          │                 │
-          ▼                 ▼
- Return Cached       Acquire Lock (SETNX)
-  Response                │
-                    ┌─────┴─────┐
-                    │           │
-              Lock Failed   Lock Success
-                    │           │
-                    ▼           ▼
-           Wait Response    Execute Callback
-                    │           │
-                    ▼           ▼
-          Read Cached     Save Response
-             Response          │
-                    └──────────┘
-                         │
-                         ▼
-                   Return Response
+Request
+    │
+    ▼
+SETNX
+    │
+ ┌──┴─────────┐
+ │            │
+Success     Failed
+ │            │
+ ▼            ▼
+Execute    Return Error
+ │
+ ▼
+Release Lock
 ```
 
 ---
 
-## How It Works
+## 🧠 Why Use SETNX?
 
-### First Request
-
-1. Check cached response.
-2. Cache not found.
-3. Acquire Redis lock using `SETNX`.
-4. Execute business logic.
-5. Store response in Redis.
-6. Release lock.
-7. Return response.
-
----
-
-### Duplicate Request
-
-1. Check cached response.
-2. Cache found.
-3. Return cached response immediately.
-
----
-
-## Why Use Idempotency?
-
-Without Idempotency
+`SETNX` stands for:
 
 ```
-POST /payment
-
-↓
-
-Payment Created
-
-↓
-
-POST /payment
-
-↓
-
-Payment Created Again 
+SET if Not Exists
 ```
 
-With Idempotency
-
-```
-POST /payment
-
-↓
-
-Payment Created
-
-↓
-
-POST /payment
-
-↓
-
-Return Existing Response 
-```
+Unlike using `GET` followed by `SET`, `SETNX` performs the check and write in a **single atomic operation**, preventing race conditions.
 
 ---
 
-## Common Use Cases
+## ⏳ Why Use TTL?
 
-- Payment
-- Checkout
-- Order
-- Registration
-- Top Up
-- Reward Claim
-- Voucher Redemption
+Every lock has a Time-To-Live (TTL).
 
----
+```go
+30 * time.Second
+```
 
-## Technologies
+The TTL acts as a safety mechanism.
 
-- Golang
-- Redis
-- SETNX
-- JSON
-- Environment Variables
+If the application crashes before releasing the lock, Redis will automatically remove it after the TTL expires.
+
+Without a TTL, a stale lock could block future requests indefinitely.
 
 ---
 
-## Author
+## Use Cases
 
-Dicky Perdian
+- Payment Processing
+- Inventory Updates
+- Flash Sale
+- Voucher Generation
+- Scheduled Jobs
+- Cron Jobs
+- Data Synchronization
+- Report Generation
 
-GitHub
+---
 
-https://github.com/dickydns
+## Related Articles
+
+- Retry Pattern
+- Circuit Breaker Pattern
+- Idempotency
+- Distributed Lock
+- Worker Pool *(Coming Soon)*
+
+---
+
+##  Support
+
+If you find this project useful, consider giving it a ⭐ on GitHub.
+
+Feedback and contributions are always welcome!

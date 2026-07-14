@@ -43,7 +43,7 @@ distributed-lock-golang/
 
 ---
 
-## ⚙️ Environment Variables
+##  Environment Variables
 
 Create a `.env` file.
 
@@ -55,7 +55,7 @@ REDIS_PASSWORD=
 
 ---
 
-## 📥 Installation
+##  Installation
 
 Clone the repository.
 
@@ -83,7 +83,7 @@ go run .
 
 ---
 
-## 💻 Example
+## Example
 
 ```go
 lock := helper.NewDistributedLock(redis)
@@ -113,7 +113,7 @@ fmt.Println(result)
 
 ---
 
-## 🔄 How It Works
+## How It Works
 
 ```text
 Request
@@ -134,7 +134,7 @@ Release Lock
 
 ---
 
-## 🧠 Why Use SETNX?
+##  Why Use SETNX?
 
 `SETNX` stands for:
 
@@ -146,7 +146,7 @@ Unlike using `GET` followed by `SET`, `SETNX` performs the check and write in a 
 
 ---
 
-## ⏳ Why Use TTL?
+## Why Use TTL?
 
 Every lock has a Time-To-Live (TTL).
 

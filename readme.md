@@ -121,7 +121,10 @@ SETNX
 Success     Failed
  │            │
  ▼            ▼
-Execute    Return Info
+Execute    Return Error
+ │
+ ▼
+Release Lock
 
 ```
 
